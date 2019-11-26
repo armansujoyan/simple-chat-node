@@ -8,7 +8,7 @@ dotenv.config();
 
 import ApiRouter from './routes';
 import { mongoConfig } from './config';
-import { MONGODB_URI } from './utils';
+import { MONGODB_URI } from './utils/secrets';
 
 const port: number | string = process.env.PORT || 5000;
 

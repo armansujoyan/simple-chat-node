@@ -1,4 +1,5 @@
 import { Schema, model, Model } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 import { IUser } from '../interfaces';
 
@@ -21,6 +22,14 @@ const UserSchema: Schema = new Schema({
     type: Boolean
   }
 })
+
+UserSchema.methods.verifyPassword = async function verifyPassword(password: string) {
+  try {
+    return await bcrypt.compare(password, this.password);
+  } catch (error) {
+    throw new Error(error);
+  }
+}
 
 const User: Model<IUser> = model('User', UserSchema);
 

@@ -3,14 +3,13 @@ import { Strategy as LocalStrategy} from 'passport-local';
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../models';
 import secrets from '../utils/secrets';
-import { IUser } from '../interfaces';
 
 passport.use(new LocalStrategy({
   usernameField: 'username',
   passwordField: 'password'
 }, async (username, password, done) => {
   try {
-    const user: IUser | null = await User.findOne({ username });
+    const user = await User.findOne({ username });
 
     if(!user) {
       return done(undefined, false, { message: `Username ${username} not found.`});

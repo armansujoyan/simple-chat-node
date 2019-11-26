@@ -1,8 +1,8 @@
-import passport, { Strategy } from 'passport';
+import passport from 'passport';
 import { Strategy as LocalStrategy} from 'passport-local';
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import { User } from '../models';
-import { JWT_SECRET } from '../utils/secrets';
+import secrets from '../utils/secrets';
 import { IUser } from '../interfaces';
 
 passport.use(new LocalStrategy({
@@ -10,20 +10,37 @@ passport.use(new LocalStrategy({
   passwordField: 'password'
 }, async (username, password, done) => {
   try {
-    const foundUser: IUser | null = await User.findOne({ username });
+    const user: IUser | null = await User.findOne({ username });
 
-    if(!foundUser) {
+    if(!user) {
       return done(undefined, false, { message: `Username ${username} not found.`});
     };
 
-    const isPasswordValid: boolean = await foundUser.validatePassword(password);
+    const isPasswordValid: boolean = await user.validatePassword(password);
 
     if(!isPasswordValid) {
       return done(null, false);
     }
 
-    return done(null, foundUser);
+    return done(null, user);
   } catch (error) {
     done(error, null);
   };
+}))
+
+passport.use(new JWTStrategy({
+  jwtFromRequest: ExtractJwt.fromHeader('authorization'),
+  secretOrKey: secrets.PUBLIC_KEY
+}, async (payload, done) => {
+  try {
+    const user = User.findOne(payload.sub);
+
+    if (!user) {
+      return done(null, false);
+    }
+
+    done(null, user);
+  } catch (error) {
+    done(error, false);
+  }
 }))

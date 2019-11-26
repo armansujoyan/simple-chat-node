@@ -19,7 +19,8 @@ const UserSchema: Schema = new Schema({
     required: true
   },
   is_logged_in: {
-    type: Boolean
+    type: Boolean,
+    default: false
   }
 })
 
@@ -28,6 +29,15 @@ UserSchema.methods.verifyPassword = async function verifyPassword(password: stri
     return await bcrypt.compare(password, this.password);
   } catch (error) {
     throw new Error(error);
+  }
+}
+
+UserSchema.methods.authSerialize = function authSerialize() {
+  return {
+    _id: this._id,
+    email: this.email,
+    username: this.username,
+    is_logged_in: this.is_logged_in
   }
 }
 

@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import http, { Server } from 'http';
 import mongoose from 'mongoose';
@@ -22,5 +23,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use(new APIRouter().router);
+app.use(bodyParser.json());
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

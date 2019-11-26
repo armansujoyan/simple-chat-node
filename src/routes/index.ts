@@ -13,10 +13,7 @@ class APIRouter {
   }
 
   private routes() {
-    this.router.use('/api/user', this.userRouter);
-    this.router.use('/api/secret', this.authMiddleware.authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
-      res.json({ yeeey: 'hdalkgej'})
-    })
+    this.router.use('/api/users?', this.userRouter);
   }
 }
 

@@ -14,6 +14,11 @@ import secrets from './utils/secrets';
 const port: number | string = process.env.PORT || 5000;
 
 const app: Application = express();
+
+app.use(bodyParser.json());
+
+app.use(new APIRouter().router);
+
 const server: Server = http.createServer(app);
 
 if (process.env.NODE_ENV === 'development') {
@@ -21,8 +26,5 @@ if (process.env.NODE_ENV === 'development') {
   mongoose.connect(secrets.MONGODB_URI, mongoConfig)
     .then(() => console.log('Connected to Mongo.'));
 }
-
-app.use(new APIRouter().router);
-app.use(bodyParser.json());
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

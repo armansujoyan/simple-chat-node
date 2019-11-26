@@ -8,7 +8,7 @@ dotenv.config();
 
 import APIRouter from './routes';
 import { mongoConfig } from './config';
-import { MONGODB_URI } from './utils/secrets';
+import secrets from './utils/secrets';
 
 const port: number | string = process.env.PORT || 5000;
 
@@ -17,7 +17,7 @@ const server: Server = http.createServer(app);
 
 if (process.env.NODE_ENV === 'development') {
   app.use(cors());
-  mongoose.connect(MONGODB_URI, mongoConfig)
+  mongoose.connect(secrets.MONGODB_URI, mongoConfig)
     .then(() => console.log('Connected to Mongo.'));
 }
 

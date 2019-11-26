@@ -1,6 +1,20 @@
-export const MONGODB_URI: string = process.env.MONGODB_URI || '';
+const getSecrets = () => {
+  const secrets: any = {
+    MONGODB_URI: process.env.MONGODB_URI,
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    PUBLIC_KEY: process.env.PUBLIC_KEY
+  }
 
-if(!MONGODB_URI) {
-  console.log('Missing enviornmental variable. Set MONGODB_URI environment variable.')
-  process.exit(1);
+  for(let key in secrets) {
+    if(Object.prototype.hasOwnProperty.call(secrets, key)) {
+      if(!secrets[key]) {
+        console.log(`Missing secret. Provide value for ${key}.`);
+        process.exit(1);
+      }
+    }
+  }
+
+  return secrets;
 }
+
+export default getSecrets();

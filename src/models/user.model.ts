@@ -2,6 +2,7 @@ import { Schema, model, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 import { IUser } from '../interfaces';
+import { uniqueValidator } from '../utils/validators';
 
 const UserSchema: Schema = new Schema({
   username: {
@@ -42,5 +43,13 @@ UserSchema.methods.authSerialize = function authSerialize() {
 }
 
 const User: Model<IUser> = model('User', UserSchema);
+
+User.schema.path('username').validate(
+  (username: string) => uniqueValidator({ username }, User),
+  'User with this username already exists');
+
+User.schema.path('email').validate(
+  (email: string) => uniqueValidator({ email }, User),
+  'User with this username already exists');
 
 export default User;

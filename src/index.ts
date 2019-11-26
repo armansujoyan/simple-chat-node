@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 
 dotenv.config();
 
-import ApiRouter from './routes';
+import APIRouter from './routes';
 import { mongoConfig } from './config';
 import { MONGODB_URI } from './utils/secrets';
 
@@ -21,6 +21,6 @@ if (process.env.NODE_ENV === 'development') {
     .then(() => console.log('Connected to Mongo.'));
 }
 
-app.use(ApiRouter);
+app.use(new APIRouter().router);
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

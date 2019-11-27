@@ -3,17 +3,20 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import http, { Server } from 'http';
-import mongoose, { Connection, mongo } from 'mongoose';
+import io from 'socket.io';
+import mongoose, { Connection } from 'mongoose';
 
 dotenv.config();
 
 import APIRouter from './routes';
 import { mongoConfig } from './config';
 import secrets from './utils/secrets';
+import { SocketController } from './controllers';
 
 class AppServer {
   private server: Server;
   private app: Application;
+  private socket: SocketController;
   private port: number = secrets.PORT;
 
   constructor() {
@@ -22,6 +25,7 @@ class AppServer {
     this.configMongo();
     this.configRoutes();
     this.server = http.createServer(this.app);
+    this.socket = new SocketController(io(this.server));
   }
 
   public listen() {

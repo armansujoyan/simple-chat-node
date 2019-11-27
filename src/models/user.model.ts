@@ -18,10 +18,6 @@ const UserSchema: Schema = new Schema({
   password: {
     type: String,
     required: true
-  },
-  is_logged_in: {
-    type: Boolean,
-    default: false
   }
 })
 

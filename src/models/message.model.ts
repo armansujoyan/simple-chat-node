@@ -2,10 +2,6 @@ import { Schema, Model, model } from "mongoose";
 import IMessage from "../interfaces/message.interface";
 
 const MessageSchema: Schema = new Schema({
-  chat: {
-    type: Schema.Types.ObjectId,
-    required: true
-  },
   owner: {
     type: Schema.Types.ObjectId,
     required: true

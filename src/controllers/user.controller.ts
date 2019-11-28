@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { signJwt } from '../utils/jwt'
 
 import { User } from '../models';
+import { ExtRequest } from "../interfaces";
 
 class UserController {
   public async signUp(req: Request, res: Response) {
@@ -36,9 +37,14 @@ class UserController {
     })(req, res, next);
   }
 
-  public async getUserById(req: Request, res: Response) {
+  public async getUserById(req: ExtRequest, res: Response) {
     try {
       const { uid } = req.params;
+      const { user: reqUser } = req;
+
+      if(reqUser._id.toString() !== uid) {
+        return res.status(401).json({ status: 'error', error: 'Unauthorized'});
+      }
 
       const user = await User.findById(uid);
 

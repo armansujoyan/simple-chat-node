@@ -10,6 +10,10 @@ const MessageSchema: Schema = new Schema({
     type: Schema.Types.ObjectId,
     required: true
   },
+  receiver: {
+    type: Schema.Types.ObjectId,
+    required: true
+  },
   message: {
     type: String,
     maxlength: [640, 'Message can\'t be longer than 640 characters']

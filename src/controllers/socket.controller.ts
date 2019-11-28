@@ -1,13 +1,13 @@
 import { Server, Namespace} from 'socket.io';
-import { ActiveUser, Message } from '../models';
+import { ActiveUser, Message, User } from '../models';
 import jwt from 'jsonwebtoken';
-import { ExtSocket as Socket } from '../interfaces/';
+import { ExtSocket as Socket, IUser } from '../interfaces/';
 import secrets from '../utils/secrets';
 
 enum socketMessage {
   NEW_USER_CONNECTION = 'NEW_USER_CONNECTION',
-  NEW_USER_CONNECTION_SUCCESS = 'NEW_USER_CONNECTION_SUCCESS',
-  USER_DISCONNECTION_SUCCESS = 'USER_DISCONNECTION_SUCCESS',
+  NEW_USER_JOINED = 'NEW_USER_JOINED',
+  USER_DISCONNECTED = 'USER_DISCONNECTED',
   CONNECTION_ERROR = 'CONNECTION_ERROR',
   AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   SEND_PRIVATE_MESSAGE = 'SEND_PRIVATE_MESSAGE',
@@ -63,8 +63,12 @@ export default class SocketController {
 
   private async userConnectionHandler(socket: Socket, userId: string) {
     try {
-      await ActiveUser.create({ userId, socketId: socket.id });
-      this.chat.to(socket.id).emit(socketMessage.NEW_USER_CONNECTION_SUCCESS);
+      const joinedUser = await User.findById(userId);
+      const activePairExists = await ActiveUser.findOne({ userId })
+      if(joinedUser && !activePairExists) {
+        await ActiveUser.create({ userId, socketId: socket.id });
+        this.chat.emit(socketMessage.NEW_USER_JOINED, joinedUser.authSerialize());
+      }
     } catch (error) {
       this.handleError(socket, error);
     }
@@ -87,7 +91,7 @@ export default class SocketController {
       if(!this.checkIdentity(socket, userId)) return;
       await ActiveUser.findOneAndDelete({ userId });
 
-      this.chat.to(socket.id).emit(socketMessage.USER_DISCONNECTION_SUCCESS);
+      this.chat.emit(socketMessage.USER_DISCONNECTED, userId );
     } catch (error) {
       this.handleError(socket, error);
     }

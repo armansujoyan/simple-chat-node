@@ -3,7 +3,7 @@ import passport from "passport";
 import bcrypt from 'bcryptjs';
 import { signJwt } from '../utils/jwt'
 
-import { User } from '../models';
+import { User, ActiveUser } from '../models';
 import { ExtRequest } from "../interfaces";
 
 class UserController {
@@ -53,6 +53,20 @@ class UserController {
       }
 
       return res.status(500).json({ status: 'error', error: 'User not found'});
+    } catch (error) {
+      return res.status(500).json({ status: 'error', error });
+    }
+  }
+
+  public async getActiveUsers(req: ExtRequest, res: Response) {
+    try {
+      const users = await ActiveUser.find({});
+
+      if(users) {
+        return res.status(200).json({ users });
+      }
+
+      return res.status(500).json({ status: 'error', error: 'Unable to find users' });
     } catch (error) {
       return res.status(500).json({ status: 'error', error });
     }

@@ -15,6 +15,7 @@ class UserRouter {
   private routes() {
     this.router.post('/signup', this.userController.signUp);
     this.router.post('/signin', this.userController.signIn);
+    this.router.get('/actives', this.authMiddleware.authenticateJWT, this.userController.getActiveUsers);
     this.router.get('/:uid', this.authMiddleware.authenticateJWT, this.userController.getUserById);
   }
 }

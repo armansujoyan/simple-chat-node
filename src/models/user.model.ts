@@ -33,8 +33,7 @@ UserSchema.methods.authSerialize = function authSerialize() {
   return {
     _id: this._id,
     email: this.email,
-    username: this.username,
-    is_logged_in: this.is_logged_in
+    username: this.username
   }
 }
 

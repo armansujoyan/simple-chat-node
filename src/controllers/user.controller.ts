@@ -35,6 +35,22 @@ class UserController {
       }
     })(req, res, next);
   }
+
+  public async getUserById(req: Request, res: Response) {
+    try {
+      const { uid } = req.params;
+
+      const user = await User.findById(uid);
+
+      if (user) {
+        return res.status(200).json({ user: user.authSerialize() });
+      }
+
+      return res.status(500).json({ status: 'error', error: 'User not found'});
+    } catch (error) {
+      return res.status(500).json({ status: 'error', error });
+    }
+  }
 }
 
 export default UserController;

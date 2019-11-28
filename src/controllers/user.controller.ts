@@ -60,7 +60,7 @@ class UserController {
 
   public async getActiveUsers(req: ExtRequest, res: Response) {
     try {
-      const users = await ActiveUser.find({});
+      const users = await ActiveUser.find({}).populate('userId');
 
       if(users) {
         return res.status(200).json({ users });

@@ -1,13 +1,15 @@
-import { Socket, Server, Namespace} from 'socket.io';
+import { Server, Namespace} from 'socket.io';
 import { ActiveUser, Message } from '../models';
-import { verifyJwt } from '../utils/jwt';
-import IMessage from '../interfaces/message.interface';
+import jwt from 'jsonwebtoken';
+import { ExtSocket as Socket } from '../interfaces/';
+import secrets from '../utils/secrets';
 
 enum socketMessage {
   NEW_USER_CONNECTION = 'NEW_USER_CONNECTION',
   NEW_USER_CONNECTION_SUCCESS = 'NEW_USER_CONNECTION_SUCCESS',
   USER_DISCONNECTION_SUCCESS = 'USER_DISCONNECTION_SUCCESS',
   CONNECTION_ERROR = 'CONNECTION_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   SEND_PRIVATE_MESSAGE = 'SEND_PRIVATE_MESSAGE',
   NEW_PRIVATE_MESSAGE = 'NEW_PRIVATE_MESSAGE',
   DISCONNECT_USER = 'DISCONNECT_USER'
@@ -29,21 +31,31 @@ export default class SocketController {
 
   private socketAuthentication(socket: Socket, next: Function) {
     const { token } = socket.handshake.query;
-    const isAuthenticated = verifyJwt(token);
-    isAuthenticated ? next() : next(new Error('Unauthorized'));
+    if(token) {
+      jwt.verify(token, secrets.PUBLIC_KEY, (error: Error, decoded: any) => {
+        if (error) {
+          return next(error)
+        } else {
+          socket.userId = decoded.sub;
+          return next();
+        }
+      })
+    } else {
+      return next(new Error('Unauthorized'));
+    }
   }
 
   private configChatNamespace() {
     this.chat.use(this.socketAuthentication);
 
-    this.chat.on('connect', (socket: Socket) => {
-      this.chat.on(socketMessage.NEW_USER_CONNECTION, (userId: string) => {
+    this.chat.on('connection', (socket: Socket) => {
+      socket.on(socketMessage.NEW_USER_CONNECTION, (userId: string) => {
         this.userConnectionHandler(socket, userId);
       });
-      this.chat.on(socketMessage.PRIVATE_MESSAGE, (message: IMessage) => {
+      socket.on(socketMessage.SEND_PRIVATE_MESSAGE, (message: any) => {
         this.priavteMessageHandler(socket, message);
       })
-      this.chat.on(socketMessage.DISCONNECT_USER, (userId: string) => {
+      socket.on(socketMessage.DISCONNECT_USER, (userId: string) => {
         this.userDisconnectionHandler(socket, userId);
       })
     })
@@ -58,7 +70,7 @@ export default class SocketController {
     }
   }
 
-  private async priavteMessageHandler(socket: Socket, message: IMessage) {
+  private async priavteMessageHandler(socket: Socket, message: any) {
     try {
       await Message.create(message);
       const receiver = await ActiveUser.findOne({ userId: message.receiver });
@@ -72,7 +84,9 @@ export default class SocketController {
 
   private async userDisconnectionHandler(socket: Socket, userId: string) {
     try {
+      if(!this.checkIdentity(socket, userId)) return;
       await ActiveUser.findOneAndDelete({ userId });
+
       this.chat.to(socket.id).emit(socketMessage.USER_DISCONNECTION_SUCCESS);
     } catch (error) {
       this.handleError(socket, error);
@@ -84,5 +98,15 @@ export default class SocketController {
       message: 'Unable to connect',
       error
      })
+  }
+
+  private checkIdentity(socket: Socket, userId: string) {
+    if (socket.userId !== userId) {
+      this.chat.to(socket.id).emit(socketMessage.AUTHENTICATION_ERROR, {
+        message: 'Unathorized'
+      });
+      return false;
+    }
+    return true;
   }
 }

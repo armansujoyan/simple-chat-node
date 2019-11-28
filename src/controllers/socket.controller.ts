@@ -1,7 +1,7 @@
 import { Server, Namespace} from 'socket.io';
 import { ActiveUser, Message, User } from '../models';
 import jwt from 'jsonwebtoken';
-import { ExtSocket as Socket, IUser } from '../interfaces/';
+import { ExtSocket as Socket } from '../interfaces/';
 import secrets from '../utils/secrets';
 
 enum socketMessage {

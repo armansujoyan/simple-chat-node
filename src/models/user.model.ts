@@ -45,6 +45,6 @@ User.schema.path('username').validate(
 
 User.schema.path('email').validate(
   (email: string) => uniqueValidator({ email }, User),
-  'User with this username already exists');
+  'User with this email already exists');
 
 export default User;

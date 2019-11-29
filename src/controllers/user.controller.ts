@@ -21,6 +21,9 @@ class UserController {
       const token = signJwt(user);
       res.status(200).json({ token, user: user.authSerialize() });
     } catch(error) {
+      if(error.name === 'ValidationError') {
+        return res.status(500).json({ status: 'error', message: error.message });
+      }
       res.status(500).json({ status: 'error', message: error })
     }
   }

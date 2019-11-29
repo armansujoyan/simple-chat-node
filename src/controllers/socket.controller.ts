@@ -64,7 +64,10 @@ export default class SocketController {
   private async userConnectionHandler(socket: Socket, userId: string) {
     try {
       const joinedUser = await User.findById(userId);
-      const activePairExists = await ActiveUser.findOne({ userId })
+      const activePairExists = await ActiveUser.findOne({ userId });
+      if(activePairExists) {
+        await ActiveUser.updateOne({ userId }, { socketId: socket.id });
+      }
       if(joinedUser && !activePairExists) {
         await ActiveUser.create({ userId, socketId: socket.id });
         this.chat.emit(socketMessage.NEW_USER_JOINED, joinedUser.authSerialize());
@@ -76,10 +79,11 @@ export default class SocketController {
 
   private async priavteMessageHandler(socket: Socket, message: any) {
     try {
-      await Message.create(message);
-      const receiver = await ActiveUser.findOne({ userId: message.receiver });
+      const persistedMessage = await Message.create(message);
+      const receiver = await ActiveUser.findOne({ userId: message.reciever });
       if (receiver) {
-        this.chat.to(receiver.socketId).emit(socketMessage.NEW_PRIVATE_MESSAGE, message);
+        this.chat.to(socket.id).emit(socketMessage.NEW_PRIVATE_MESSAGE, persistedMessage);
+        this.chat.to(receiver.socketId).emit(socketMessage.NEW_PRIVATE_MESSAGE, persistedMessage);
       };
     } catch (error) {
       this.handleError(socket, error);
